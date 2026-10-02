@@ -1,26 +1,32 @@
-# Filament issue reproduction template
+# filament:assets publishes executable files
 
-A minimal Laravel + Filament application for reproducing bugs you would like to file at [`filamentphp/filament`](https://github.com/filamentphp/filament/issues).
+Reproduction for a Filament bug: since v5.8.3, `filament:assets` publishes every asset with mode `755` instead of `644`.
 
-This repository is regenerated automatically from each stable Filament release. Each branch matches the Filament major version it was built against:
+This repository is the [5.x issue reproduction template](https://github.com/filamentphp/issue-reproduction-template/tree/5.x) with two changes:
 
-- [`3.x`](https://github.com/filamentphp/issue-reproduction-template/tree/3.x) — latest Filament v3 release (maintenance mode)
-- [`4.x`](https://github.com/filamentphp/issue-reproduction-template/tree/4.x) — latest Filament v4 release
-- [`5.x`](https://github.com/filamentphp/issue-reproduction-template/tree/5.x) — latest Filament v5 release
+- `composer.lock` pins Filament v5.9.0.
+- The assets published by v5.9.0 are committed in `public/` with mode `644`, as Filament published them before v5.8.3.
 
-## Setup
-
-You're on the `5.x` branch. To start a new reproduction project, run:
+## Steps
 
 ```bash
-git clone --branch 5.x https://github.com/filamentphp/issue-reproduction-template.git filament-issue-reproduction
-cd filament-issue-reproduction
-composer setup
-php artisan serve
+git clone https://github.com/jhm-ciberman/filament-assets-executable-mode.git
+cd filament-assets-executable-mode
+umask 0022
+composer install
+git diff --summary
 ```
 
-`composer setup` installs Composer + npm dependencies, copies `.env.example` to `.env`, generates an app key, migrates and seeds the database, and builds frontend assets.
+## Result
 
-Log in at <http://127.0.0.1:8000/admin> with `test@example.com` / `password`.
+`composer install` runs `filament:upgrade`, which republishes the assets. Every committed asset shows a mode change, with no content change:
 
-Add the minimum code needed to reproduce your bug, push your repository, and link it from your Filament issue.
+```
+ mode change 100644 => 100755 public/css/filament/filament/app.css
+ mode change 100644 => 100755 public/js/filament/filament/app.js
+ ...
+```
+
+## Expected
+
+No changes. The published assets keep mode `644`.
